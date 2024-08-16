@@ -7,6 +7,7 @@ setwd("C:/Users/notne/Research/GitHub/Gails_beetles")
 library(ggplot2)
 library(dplyr)
 library(brms)
+library(lme4)
 
 ################################################################################
 
@@ -97,6 +98,50 @@ ggplot(beetle, aes(x = crp, y = abundance, color = man)) +
   geom_jitter(width = 0.15) +
   facet_grid(field ~ year) +
   theme(axis.text.x = element_text(angle = 90))
+
+################################################################################
+
+## another plot of abundance for each year by field
+
+sumbeet <- beetle %>% 
+  group_by(field, year, man) %>%
+  summarise(mean = mean(abundance))
+
+## first do it with one mean for each field/year/management
+
+ggplot(sumbeet, aes(x = man, y = mean, group = year)) +
+  geom_point(size=3) +
+  geom_line(aes(color = factor(year), group = year)) +
+  facet_wrap(~ field) +
+  xlab("Management type")
+
+## add in sampling location
+
+sumbeet2 <- beetle %>% 
+  group_by(field, year, man, sloc) %>%
+  summarise(mean = mean(abundance))
+
+color_sloc <- c("steelblue", "tomato2")
+
+ggplot(sumbeet2, aes(x = man, y = mean, group = interaction(year, sloc))) +
+  facet_wrap(~ field) +
+  geom_point(aes(fill=factor(sloc)), size=3, shape=21, stroke=0) +
+  scale_fill_manual(values=color_sloc, labels = c("C" = "Crop", "M" = "Margin")) +
+  geom_line(aes(color = factor(year), group = interaction(year, sloc))) +
+  xlab("Management type") +
+  labs(fill="Location", colour="Year")
+  
+
+################################################################################
+
+### DUMP
+
+scale_color_manual(values = c("C" = "blue", "M" = "red"), 
+                   guide = guide_legend(title = "Sampling location")) +
+  scale_color_manual(values = c("2011" = "green", "2012" = "purple", 
+                                "2013" = "orange", "2014" = "brown", 
+                                "2015" = "pink", "2016" = "cyan",
+                                "2017" = "magenta", "2024" = "grey"))
 
 ################################################################################
 
